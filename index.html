@@ -280,31 +280,39 @@ function analyzeFarm(){
         }
     }
 
-    let output = `
-    <div style="padding:15px; text-align:center">
+    let colorClass = "green";
+if (status.includes("Moderate")) colorClass = "orange";
+if (status.includes("High")) colorClass = "red";
 
-    <h2>${data.icon || "🌱"} ${status}</h2>
+let output = `
+<div class="result-card">
 
-    <p style="font-size:16px; margin-top:10px;">
-    ${message}
-    </p>
+<div class="status ${colorClass}">
+${data.icon || "🌱"} ${status}
+</div>
 
-    <div style="background:#fff3cd; padding:15px; border-radius:10px; margin-top:15px;">
-    <b>👉 What you should do:</b><br><br>
-    ${action}
-    </div>
+<div class="message">
+${message}
+</div>
 
-    <div style="margin-top:20px; font-size:14px; color:#555;">
-    🌡 Temp: <b>${data.temperature ?? "-"}°C</b> <br>
-    🌧 ${rainMsg} <br><br>
+<div class="action-box">
+👉 <b>Action:</b><br>
+${action}
+</div>
 
-    💰 <b>$${data.carbon_value_usd ?? 0}</b> possible earnings
-    </div>
+<div class="info-row">
+<span>🌡 ${data.temperature ?? "-"}°C</span>
+<span>🌧 ${rainMsg}</span>
+</div>
 
-    </div>
-    `;
+<div class="money">
+💰 Earn up to $${data.carbon_value_usd ?? 0}
+</div>
 
-    document.getElementById("result").innerHTML = output;
+</div>
+`;
+
+document.getElementById("result").innerHTML = output;
 })
 .catch(()=>{
     document.getElementById("result").innerHTML = "❌ Server error";
