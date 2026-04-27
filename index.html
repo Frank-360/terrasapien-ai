@@ -208,66 +208,58 @@ function analyzeFarm(){
     .then(r => r.json())
     .then(data => {
     
-        if (!data) {
+    if (!data) {
         document.getElementById("result").innerHTML = "❌ Invalid response";
         return;
     }
 
-    const status = data.crop_status || "Unknown";
+    let status = data.crop_status || "Unknown";
 
-    let statusColor = "#2e7d32"; // green
-    if (status.includes("Moderate")) statusColor = "#f9a825"; // amber
-    if (status.includes("High")) statusColor = "#c62828"; // red
-
-    let explanation = "No data available.";
+    let message = "";
+    let action = data.advice || "No recommendation";
 
     if (status === "Healthy") {
-        explanation = "Your crops are in good condition with sufficient moisture and growth.";
-    } 
+        message = "Your crops have enough water and are growing well.";
+    }
     else if (status.includes("Moderate")) {
-        explanation = "Your crops are beginning to experience water stress. Early intervention can prevent yield loss.";
-    } 
-    else if (status.includes("High")) {
-        explanation = "Your crops are under significant stress due to lack of water. Immediate action is required.";
+        message = "Your crops are starting to get dry.";
+    }
+    else {
+        message = "Your crops need water urgently to avoid damage.";
+    }
+
+    // ✅ SAFE rain logic
+    let rainMsg = "No rain data";
+    if (data.time_to_rain !== undefined) {
+        if (data.time_to_rain <= 3) {
+            rainMsg = "Rain expected within hours";
+        } else if (data.time_to_rain <= 24) {
+            rainMsg = "Rain expected today";
+        } else {
+            rainMsg = "Rain expected in " + Math.round(data.time_to_rain/24) + " days";
+        }
     }
 
     let output = `
-    <div style="padding:15px">
+    <div style="padding:15px; text-align:center">
 
-    <h3 style="color:${statusColor}; margin-bottom:5px;">
-    ${data.icon || "🌱"} ${status}
-    </h3>
+    <h2>${data.icon || "🌱"} ${status}</h2>
 
-    <p style="font-size:14px; color:#555;">
-    ${explanation}
+    <p style="font-size:16px; margin-top:10px;">
+    ${message}
     </p>
 
-    <div style="background:#e8f5e9; padding:12px; border-radius:8px; margin:10px 0;">
-    <b>🌱 Recommended Action:</b><br>
-    ${data.advice || "No recommendation available"}
+    <div style="background:#fff3cd; padding:15px; border-radius:10px; margin-top:15px;">
+    <b>👉 What you should do:</b><br><br>
+    ${action}
     </div>
 
-    <hr>
+    <div style="margin-top:20px; font-size:14px; color:#555;">
+    🌡 Temp: <b>${data.temperature ?? "-"}°C</b> <br>
+    🌧 ${rainMsg} <br><br>
 
-    <h4>📊 Farm Data</h4>
-
-    <p>🌡 Temperature: <b>${data.temperature ?? "-"}°C</b></p>
-    <p>🌧 Rain (5 days): <b>${data.rain_5days ?? "-"} mm</b></p>
-    <p>🌿 Vegetation (NDVI): <b>${data.ndvi ?? "-"}</b> – ${data.vegetation_status || ""}</p>
-
-    <hr>
-
-    <h4>💧 Efficiency & Climate Impact</h4>
-
-    <p>🤖 Water Saving: <b>${data.water_saving ?? 0}%</b></p>
-    <p>🌱 Carbon Stored: <b>${data.carbon ?? 0} tons</b></p>
-    <p>💰 Carbon Credits: <b>${data.carbon_credits ?? 0}</b></p>
-    <p>💵 Estimated Value: <b>$${data.carbon_value_usd ?? 0}</b></p>
-
-    <hr>
-
-    <h4>📈 Climate Score</h4>
-    <p style="font-size:18px;"><b>${data.climate_score ?? 0}/100</b></p>
+    💰 <b>$${data.carbon_value_usd ?? 0}</b> possible earnings
+    </div>
 
     </div>
     `;
