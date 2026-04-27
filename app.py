@@ -72,12 +72,6 @@ def carbon_credits(method, freq, farm_size, reduction):
     return round(credits,4), round(usd_value,2)
 
 # ---------------------------
-# ROUTES
-# ---------------------------
-@app.route("/")
-def home():
-    return "🌱 TerraSense API is running"
-
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
@@ -93,14 +87,19 @@ def analyze():
         method = data.get("method", "Manual (bucket)")
         frequency = data.get("frequency", "Weekly")
 
-        # 🌦 Weather
-        temp, rain, forecast = get_weather_data(lat, lon)
+        # ✅ GET WEATHER FIRST
+        temp, rain = get_weather_data(lat, lon)
 
+        # ✅ Rain calculation
+        evaporation_factor = 1 + (temp - 25) * 0.02
+        total_rain = rain * 5 / evaporation_factor
+
+        # ✅ Define variables
         humidity = random.randint(40, 80)
         soil = 0.6
 
         reduction = estimate_ai_water_saving(rain, temp, soil)
-        reduction = max(reduction, 10)  # prevent zero
+        reduction = max(reduction, 10)
 
         # 🌧 Rain timing
         time_to_rain = random.randint(1, 72)
@@ -109,9 +108,7 @@ def analyze():
         month = datetime.datetime.now().month
         season = "Dry Season" if month in [11,12,1,2,3] else "Rainy Season"
 
-        # 🌾 Crop logic (RESTORED)
-        total_rain = forecast
-
+        # 🌾 Crop logic
         if total_rain < 5 and humidity < 60:
             crop_status = "High Water Stress"
             advice = "Irrigate immediately"
@@ -125,7 +122,7 @@ def analyze():
             advice = "No irrigation needed"
             icon = "🟢"
 
-        # 🌿 NDVI (improved)
+        # 🌿 NDVI
         ndvi = round(0.4 + (rain / 20), 2)
         ndvi = min(ndvi, 0.8)
 
