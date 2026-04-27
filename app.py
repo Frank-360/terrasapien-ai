@@ -88,11 +88,21 @@ def analyze():
         frequency = data.get("frequency", "Weekly")
 
         # ✅ GET WEATHER FIRST
-        temp, rain = get_weather_data(lat, lon)
+    
+        try:
+            temp, rain = get_weather_data(lat, lon)
+        except:
+            temp, rain = 30, 2   # safe fallback
 
         # ✅ Rain calculation
+        
+        temp = temp if temp is not None else 30
+        rain = rain if rain is not None else 1
+
         evaporation_factor = 1 + (temp - 25) * 0.02
         total_rain = rain * 5 / evaporation_factor
+
+
 
         # ✅ Define variables
         humidity = random.randint(40, 80)
