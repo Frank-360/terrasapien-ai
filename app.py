@@ -151,7 +151,7 @@ def analyze():
         else:
             advice = "No irrigation needed now. Continue monitoring."
 
-        # 👨‍🌾 Farmer message
+       # 👨‍🌾 Farmer message
         if crop_status == "Healthy":
             farmer_message = "Your crops are doing well."
         elif crop_status == "Moderate Water Stress":
@@ -159,6 +159,12 @@ def analyze():
         else:
             farmer_message = "Your crops are very dry. Water them now."
 
+        # 🚨 REAL-TIME RAIN OVERRIDE (CRITICAL FIX)
+        if current_rain > 0.1:
+            crop_status = "Healthy"
+            icon = "🟢"
+            farmer_message = "It is currently raining on your farm."
+            advice = "No irrigation needed. Rain is already watering your crops."
         # 🌿 Improved NDVI (based on rainfall)
         ndvi = min(max((forecast / 50), 0.2), 0.8)
 
@@ -176,13 +182,14 @@ def analyze():
         carbon = estimate_carbon(farm_size, crop)
         credits, usd = carbon_credits(method, frequency, farm_size, reduction)
 
-        # 🌧 Rain timing (data-driven)
-        if current_rain > 1:
-            time_to_rain = 0
+       
+             # 🌧 Rain timing (REAL-TIME FIXED)
+        if current_rain > 0.1:
+             time_to_rain = 0
         elif forecast > 10:
-             time_to_rain = 6
+            time_to_rain = 6
         elif forecast > 5:
-             time_to_rain = 24
+            time_to_rain = 24
         else:
              time_to_rain = 48
 
@@ -210,6 +217,5 @@ def analyze():
             "carbon_value_usd": usd,
             "climate_score": score
         })
-
     except Exception as e:
-        return jsonify({"error": str(e)})
+                return jsonify({"error": str(e)})
