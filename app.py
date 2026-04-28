@@ -98,6 +98,7 @@ def analyze():
 
         # 🌤 Weather
         temp, rain, forecast = get_weather_data(lat, lon)
+        current_rain = rain or 0
 
         temp = temp or 30
         forecast = forecast or 5
@@ -109,7 +110,11 @@ def analyze():
         et = evapotranspiration(temp, crop)
 
         # 🌧 Daily rainfall
-        daily_rain = forecast / 5
+        # Combine current + forecast rain
+        effective_rain = (current_rain * 0.7) + (forecast * 0.3)
+
+        daily_rain = effective_rain / 5
+        water_balance = daily_rain - et
 
         # 💧 WATER BALANCE ENGINE
         water_balance = daily_rain - et
@@ -172,12 +177,14 @@ def analyze():
         credits, usd = carbon_credits(method, frequency, farm_size, reduction)
 
         # 🌧 Rain timing (data-driven)
-        if forecast > 10:
-            time_to_rain = 6
+        if current_rain > 1:
+            time_to_rain = 0
+        elif forecast > 10:
+             time_to_rain = 6
         elif forecast > 5:
-            time_to_rain = 24
+             time_to_rain = 24
         else:
-            time_to_rain = 48
+             time_to_rain = 48
 
         # 🌱 Season
         month = datetime.datetime.now().month
