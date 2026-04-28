@@ -150,7 +150,7 @@ def analyze():
         elif crop_status == "Moderate Water Stress":
             farmer_message = "Your crops are starting to get dry."
         else:
-            farmer_message = "Your crops need water urgently."
+            farmer_message = "Your crops are very dry. You should water them now."
 
         # 🌿 Vegetation
         ndvi = min(round(0.4 + (rain / 20), 2), 0.8)
