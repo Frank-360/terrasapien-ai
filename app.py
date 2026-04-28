@@ -22,11 +22,24 @@ def get_weather_data(lat, lon):
 
         return temp, rain_today, total_forecast
     except Exception as e:
-            print("Weather error:", e)
-            return 30, 0, 5
+        print("Weather error:", e)
+        return 30, 0, 5
+
 # ---------------------------
-# LOGIC
+# ADVANCED AGRI LOGIC
 # ---------------------------
+def evapotranspiration(temp, crop):
+    et0 = 0.0023 * (temp + 17)
+
+    kc = {
+        "Maize": 1.2,
+        "Rice": 1.1,
+        "Cassava": 0.9,
+        "Millet": 0.7
+    }
+
+    return et0 * kc.get(crop, 1.0)
+
 def estimate_ai_water_saving(rainfall, temperature, soil):
     saving = 0
     if rainfall > 10:
@@ -40,14 +53,6 @@ def estimate_ai_water_saving(rainfall, temperature, soil):
 def estimate_carbon(farm_size, crop):
     factors = {"Maize":0.6,"Rice":0.8,"Cassava":0.5,"Millet":0.4}
     return round(farm_size * factors.get(crop,0.5),2)
-
-def vegetation_health():
-    ndvi = round(random.uniform(0.2,0.8),2)
-    if ndvi > 0.6:
-        return ndvi, "Healthy vegetation"
-    elif ndvi > 0.4:
-        return ndvi, "Moderate vegetation"
-    return ndvi, "Poor vegetation"
 
 # ---------------------------
 # CARBON CREDIT SYSTEM
@@ -78,7 +83,6 @@ def analyze():
         import datetime
 
         data = request.get_json(silent=True) or {}
-    
 
         lat = data.get("lat", 7.38)
         lon = data.get("lon", 3.93)
@@ -93,67 +97,65 @@ def analyze():
         frequency = data.get("frequency", "Weekly")
 
         # 🌤 Weather
-        try:
-            temp, rain, forecast = get_weather_data(lat, lon)
-        except:
-            temp, rain, forecast = 30, 2, 5
+        temp, rain, forecast = get_weather_data(lat, lon)
 
         temp = temp or 30
-        rain = rain or 1
+        forecast = forecast or 5
 
-        # 🌧 Rain calculation
-        evaporation_factor = 1 + (temp - 25) * 0.02
-        total_rain = forecast / evaporation_factor
+        # 🌱 Soil (region-based realism)
+        soil = 0.5 if zone == "North" else 0.7
+
+        # 🌿 Evapotranspiration (REAL CORE)
+        et = evapotranspiration(temp, crop)
+
+        # 🌧 Daily rainfall
+        daily_rain = forecast / 5
+
+        # 💧 WATER BALANCE ENGINE
+        water_balance = daily_rain - et
 
         if zone == "North":
-            total_rain *= 0.8
+            water_balance *= 0.8
         else:
-            total_rain *= 1.1
+            water_balance *= 1.1
 
-        # 🌾 Crop thresholds
-        low_rain = 5
-        moderate_rain = 10
-
-        if crop == "Rice":
-            low_rain, moderate_rain = 8, 15
-        elif crop == "Cassava":
-            low_rain, moderate_rain = 4, 9
-        elif crop == "Millet":
-            low_rain, moderate_rain = 3, 7
-
-        if zone == "North":
-            low_rain += 1
-            moderate_rain += 2
-
-        # 🌱 Crop status
-        if total_rain < low_rain:
+        # 🌱 Crop status (NEW INTELLIGENCE)
+        if water_balance < -2:
             crop_status = "High Water Stress"
             icon = "🔴"
-        elif total_rain < moderate_rain:
+        elif water_balance < 0:
             crop_status = "Moderate Water Stress"
             icon = "🟡"
         else:
             crop_status = "Healthy"
             icon = "🟢"
 
-        # 🌱 Advice
+        # 💧 Irrigation timing engine
         if crop_status == "High Water Stress":
-            advice = "Water immediately. Very dry conditions." if zone == "North" else "Water your crops now."
+            irrigation_hours = 0
         elif crop_status == "Moderate Water Stress":
-            advice = "Water soon, rain may delay." if zone == "North" else "Monitor crops, may need water."
+            irrigation_hours = 24
         else:
-            advice = "Keep monitoring due to dry conditions." if zone == "North" else "No irrigation needed."
+            irrigation_hours = 72
+
+        # 🌱 Advice (now intelligent)
+        if irrigation_hours == 0:
+            advice = "Apply water immediately. Soil moisture is critically low."
+        elif irrigation_hours == 24:
+            advice = "Irrigate within 24 hours to prevent crop stress."
+        else:
+            advice = "No irrigation needed now. Continue monitoring."
 
         # 👨‍🌾 Farmer message
         if crop_status == "Healthy":
-            farmer_message = "Your crops are doing well. No action needed."
+            farmer_message = "Your crops are doing well."
         elif crop_status == "Moderate Water Stress":
-            farmer_message = "Your crops are starting to get dry."
+            farmer_message = "Your crops are starting to dry."
         else:
-            farmer_message = "Your crops are very dry. You should water them now."
+            farmer_message = "Your crops are very dry. Water them now."
 
-        # 🌿 Vegetation
-        ndvi = min(round(0.4 + (rain / 20), 2), 0.8)
+        # 🌿 Improved NDVI (based on rainfall)
+        ndvi = min(max((forecast / 50), 0.2), 0.8)
 
         if ndvi > 0.6:
             veg = "Healthy vegetation"
@@ -162,27 +164,27 @@ def analyze():
         else:
             veg = "Poor vegetation"
 
-        # 🤖 AI water saving
-        reduction = max(estimate_ai_water_saving(rain, temp, 0.6), 10)
+        # 🤖 Water saving
+        reduction = max(estimate_ai_water_saving(forecast, temp, soil), 10)
 
         # 🌍 Carbon
         carbon = estimate_carbon(farm_size, crop)
         credits, usd = carbon_credits(method, frequency, farm_size, reduction)
 
-        # 🌧 Rain timing
+        # 🌧 Rain timing (data-driven)
         if forecast > 10:
             time_to_rain = 6
         elif forecast > 5:
             time_to_rain = 24
         else:
-             time_to_rain = 48
+            time_to_rain = 48
 
         # 🌱 Season
         month = datetime.datetime.now().month
         season = "Dry Season" if month in [11,12,1,2,3] else "Rainy Season"
 
         # 📊 Score
-        score = min(int((carbon * 10) + (total_rain * 2)), 100)
+        score = min(int((carbon * 10) + (forecast * 2)), 100)
 
         return jsonify({
             "season": season,
@@ -191,7 +193,7 @@ def analyze():
             "advice": advice,
             "icon": icon,
             "temperature": temp,
-            "rain_5days": round(total_rain, 2),
+            "rain_5days": round(forecast, 2),
             "time_to_rain": time_to_rain,
             "ndvi": ndvi,
             "vegetation_status": veg,
@@ -204,5 +206,3 @@ def analyze():
 
     except Exception as e:
         return jsonify({"error": str(e)})
-    
-  
