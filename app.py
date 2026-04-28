@@ -100,6 +100,8 @@ def analyze():
         temp, rain, forecast = get_weather_data(lat, lon)
         current_rain = rain or 0
 
+        print("DEBUG → current_rain:", current_rain, "forecast:", forecast)
+
         temp = temp or 30
         forecast = forecast or 5
 
