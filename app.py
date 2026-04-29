@@ -187,7 +187,7 @@ def analyze():
         carbon = estimate_carbon(farm_size, crop)
         credits, usd = carbon_credits(method, frequency, farm_size, reduction)
 
-        # 🌧 Rain timing
+ # 🌧 Rain timing
         if is_raining(weather_code) or current_hour_rain > 0.2:
             time_to_rain = 0
         elif forecast_rain > 10:
@@ -198,6 +198,35 @@ def analyze():
             time_to_rain = 48
         else:
             time_to_rain = None
+
+
+# 🌧 SMART IRRIGATION DECISION (FINAL CLEAN VERSION)
+
+        if time_to_rain == 0:
+            advice = "It is raining now. No irrigation needed."
+            farmer_message = "🌧️ It is currently raining. No need to water your crops."
+
+        elif time_to_rain is not None and time_to_rain <= 6:
+            advice = "Rain expected within hours. Delay irrigation."
+            farmer_message = "Rain is expected shortly. Hold off watering for now."
+
+        elif time_to_rain is not None and time_to_rain <= 24:
+            advice = "Rain expected today. Monitor before irrigating."
+
+        elif crop_status == "High Water Stress":
+            advice = "Apply water immediately."
+
+        elif crop_status == "Moderate Water Stress":
+            advice = "Irrigate within 24 hours."
+
+        else:
+            advice = "No irrigation needed now. Continue monitoring."
+
+
+            # 🌧 Smart irrigation override
+        if time_to_rain is not None and time_to_rain <= 6:
+            advice = "Rain is expected soon. Delay irrigation and monitor conditions."
+            farmer_message = "Rain is expected shortly. Hold off watering for now."
 
         # 🌱 Season
         month = datetime.datetime.now().month
