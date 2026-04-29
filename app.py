@@ -205,22 +205,25 @@ def analyze():
             time_to_rain = None
 
 
-# 🌧 SMART IRRIGATION DECISION (FINAL CLEAN VERSION)
+# 🌧 FINAL DECISION BLOCK (FORCE PRIORITY)
 
         if time_to_rain == 0:
-            rain_message = "🌧 It is currently raining"
+            advice = "It is raining now. No irrigation needed."
+            farmer_message = "🌧️ It is currently raining. No need to water your crops."
 
         elif time_to_rain is not None and time_to_rain <= 6:
-            rain_message = "🌧 Rain expected within hours"
-
-        elif time_to_rain is not None and time_to_rain <= 24:
-            rain_message = "🌦 Rain expected today"
-
-        elif time_to_rain is not None:
-            rain_message = "🌤 Rain expected later"
+            advice = "Rain expected within hours. Delay irrigation."
+            farmer_message = "Rain is expected shortly. Hold off watering for now."
 
         else:
-            rain_message = "☀️ No rain expected"
+    # ONLY now consider crop stress
+            if crop_status == "High Water Stress":
+                advice = "Apply water immediately."
+            elif crop_status == "Moderate Water Stress":
+                advice = "Irrigate within 24 hours."
+            else:
+                 advice = "No irrigation needed now."
+
 
         # 🌱 Season
         month = datetime.datetime.now().month
