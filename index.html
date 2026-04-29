@@ -91,9 +91,22 @@ button {
     background: #f8f9fb;
     border-radius: 18px;
     padding: 24px;
-    max-width: 600px;
     margin: auto;
     box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+@media (max-width: 600px) {
+    .result-card {
+        padding: 16px;
+    }
+
+    .action-card,
+    .info-card,
+    .insight-card {
+        padding: 12px;
+    }
 }
 
 /* STATUS */
@@ -144,11 +157,32 @@ button {
     font-weight: 500;
 }
 
+@media (max-width: 600px) {
+    .action-text {
+        font-size: 16px;
+    }
+
+    .info-value {
+        font-size: 16px;
+    }
+
+    .message {
+        font-size: 15px;
+    }
+}
+
+
 /* GRID */
 .info-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 15px;
+}
+
+@media (max-width: 600px) {
+    .info-grid {
+        grid-template-columns: 1fr;   /* 🔥 stack vertically */
+    }
 }
 
 /* INFO CARDS */
@@ -157,6 +191,13 @@ button {
     gap: 12px;
     padding: 16px;
     border-radius: 14px;
+}
+
+@media (max-width: 600px) {
+    .info-card {
+        flex-direction: row;
+        align-items: center;
+    }
 }
 
 .temp-card {
@@ -179,6 +220,8 @@ button {
 .info-value {
     font-size: 18px;
     font-weight: 600;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 /* INSIGHT */
