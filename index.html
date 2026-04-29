@@ -268,18 +268,20 @@ function analyzeFarm(){
         message = "Your crops need water urgently to avoid damage.";
     }
 
-    // ✅ SAFE rain logic
-    let rainMsg = "No rain data";
-    if (data.time_to_rain !== undefined) {
-        if (data.time_to_rain <= 3) {
-            rainMsg = "Rain expected within hours";
-        } else if (data.time_to_rain <= 24) {
-            rainMsg = "Rain expected today";
-        } else {
-            rainMsg = "Rain expected in " + Math.round(data.time_to_rain/24) + " days";
-        }
-    }
+    // ✅ FIXED rain logic (SYNC WITH BACKEND)
+let rainMsg = "No rain data";
 
+if (data.time_to_rain !== undefined && data.time_to_rain !== null) {
+    if (data.time_to_rain === 0) {
+        rainMsg = "🌧 It is currently raining";
+    } else if (data.time_to_rain <= 6) {
+        rainMsg = "🌧 Rain expected within hours";
+    } else if (data.time_to_rain <= 24) {
+        rainMsg = "🌦 Rain expected today";
+    } else {
+        rainMsg = "🌤 Rain expected in " + Math.round(data.time_to_rain / 24) + " days";
+    }
+}
     let colorClass = "green";
 if (status.includes("Moderate")) colorClass = "orange";
 if (status.includes("High")) colorClass = "red";
