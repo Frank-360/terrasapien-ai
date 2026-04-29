@@ -223,9 +223,10 @@ def analyze():
             else:
                  advice = "No irrigation needed now."
 
-# 🤖 AI Insight
+       # 🤖 AI Insight (ALWAYS ASSIGNED)
+
         if time_to_rain == 0:
-            ai_insight = "Rain is already providing sufficient water."
+             ai_insight = "Rain is already providing sufficient water."
 
         elif time_to_rain is not None and time_to_rain <= 6:
             ai_insight = "Rain is expected soon, so irrigation can be delayed."
@@ -237,10 +238,10 @@ def analyze():
             ai_insight = "Crops are under severe stress due to low moisture."
 
         elif crop_status == "Moderate Water Stress":
-            ai_insight = "Soil moisture is decreasing and may affect crop growth."
+             ai_insight = "Soil moisture is decreasing and may affect crop growth."
 
         else:
-            ai_insight = "Current conditions are stable with adequate moisture."
+            ai_insight = "Conditions are stable with no immediate risk."
 
         # 🌱 Season
         month = datetime.datetime.now().month
@@ -250,6 +251,8 @@ def analyze():
         score = min(int((carbon * 10) + (forecast_rain * 2)), 100)
 
         print("FINAL OUTPUT →", advice, "| time_to_rain:", time_to_rain)
+
+        print("AI INSIGHT:", ai_insight)
 
         return jsonify({
             "season": season,
@@ -266,7 +269,7 @@ def analyze():
             "carbon": carbon,
             "carbon_credits": credits,
             "carbon_value_usd": usd,
-            "climate_score": score
+            "climate_score": score,
             "ai_insight": ai_insight,   # ✅ ADD THIS LINE
         })
 
