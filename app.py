@@ -187,45 +187,40 @@ def analyze():
         carbon = estimate_carbon(farm_size, crop)
         credits, usd = carbon_credits(method, frequency, farm_size, reduction)
 
- # 🌧 Rain timing
+ # 🌧 Rain timing (FIXED THRESHOLDS)
+
         if is_raining(weather_code) or current_hour_rain > 0.2:
-            time_to_rain = 0
-        elif forecast_rain > 10:
-            time_to_rain = 6
-        elif forecast_rain > 5:
-            time_to_rain = 24
+             time_to_rain = 0
+
+        elif forecast_rain >= 3:
+            time_to_rain = 6   # rain soon (THIS WAS YOUR PROBLEM)
+
+        elif forecast_rain >= 1:
+             time_to_rain = 24  # moderate chance
+
         elif forecast_rain > 0:
-            time_to_rain = 48
+             time_to_rain = 48
+
         else:
             time_to_rain = None
-
-        print("DEBUG → time_to_rain:", time_to_rain)
-        print("DEBUG → forecast_rain:", forecast_rain)
-        print("DEBUG → current_hour_rain:", current_hour_rain)
 
 
 # 🌧 SMART IRRIGATION DECISION (FINAL CLEAN VERSION)
 
         if time_to_rain == 0:
-            advice = "It is raining now. No irrigation needed."
-            farmer_message = "🌧️ It is currently raining. No need to water your crops."
+            rain_message = "🌧 It is currently raining"
 
         elif time_to_rain is not None and time_to_rain <= 6:
-            advice = "Rain expected within hours. Delay irrigation."
-            farmer_message = "Rain is expected shortly. Hold off watering for now."
+            rain_message = "🌧 Rain expected within hours"
 
         elif time_to_rain is not None and time_to_rain <= 24:
-            advice = "Rain expected today. Monitor before irrigating."
+            rain_message = "🌦 Rain expected today"
 
-        elif crop_status == "High Water Stress":
-            advice = "Apply water immediately."
-
-        elif crop_status == "Moderate Water Stress":
-            advice = "Irrigate within 24 hours."
+        elif time_to_rain is not None:
+            rain_message = "🌤 Rain expected later"
 
         else:
-            advice = "No irrigation needed now. Continue monitoring."
-
+            rain_message = "☀️ No rain expected"
 
         # 🌱 Season
         month = datetime.datetime.now().month
