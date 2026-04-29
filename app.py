@@ -223,6 +223,24 @@ def analyze():
             else:
                  advice = "No irrigation needed now."
 
+# 🤖 AI Insight
+        if time_to_rain == 0:
+            ai_insight = "Rain is already providing sufficient water."
+
+        elif time_to_rain is not None and time_to_rain <= 6:
+            ai_insight = "Rain is expected soon, so irrigation can be delayed."
+
+        elif time_to_rain is not None and time_to_rain <= 24:
+            ai_insight = "Rain may occur today, monitor soil before irrigating."
+
+        elif crop_status == "High Water Stress":
+            ai_insight = "Crops are under severe stress due to low moisture."
+
+        elif crop_status == "Moderate Water Stress":
+            ai_insight = "Soil moisture is decreasing and may affect crop growth."
+
+        else:
+            ai_insight = "Current conditions are stable with adequate moisture."
 
         # 🌱 Season
         month = datetime.datetime.now().month
@@ -249,6 +267,7 @@ def analyze():
             "carbon_credits": credits,
             "carbon_value_usd": usd,
             "climate_score": score
+            "ai_insight": ai_insight,   # ✅ ADD THIS LINE
         })
 
     except Exception as e:

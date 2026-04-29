@@ -104,6 +104,15 @@ button {
     font-weight: bold;
     color: #2e7d32;
 }
+.ai-box {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-size: 15px;
+    color: #0d47a1;
+}
+
 </style>
 
 </head>
@@ -318,6 +327,11 @@ ${action}
 
 <div class="money">
 💰 Earn up to $${data.carbon_value_usd ?? 0}
+</div>
+
+<div class="ai-box">
+🤖 <b>AI Insight:</b><br>
+${data.ai_insight || "No insight available"}
 </div>
 
 </div>
