@@ -199,6 +199,10 @@ def analyze():
         else:
             time_to_rain = None
 
+        print("DEBUG → time_to_rain:", time_to_rain)
+        print("DEBUG → forecast_rain:", forecast_rain)
+        print("DEBUG → current_hour_rain:", current_hour_rain)
+
 
 # 🌧 SMART IRRIGATION DECISION (FINAL CLEAN VERSION)
 
@@ -222,11 +226,6 @@ def analyze():
         else:
             advice = "No irrigation needed now. Continue monitoring."
 
-
-            # 🌧 Smart irrigation override
-        if time_to_rain is not None and time_to_rain <= 6:
-            advice = "Rain is expected soon. Delay irrigation and monitor conditions."
-            farmer_message = "Rain is expected shortly. Hold off watering for now."
 
         # 🌱 Season
         month = datetime.datetime.now().month
