@@ -58,18 +58,9 @@ button {
 }
 
 
-.result-card {
-    background: white;
-    border-radius: 12px;
-    padding: 18px;
-    margin-top: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    text-align: center;
-}
-
 .status {
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 18px;
+    font-weight: 600;
     margin-bottom: 5px;
 }
 
@@ -77,11 +68,7 @@ button {
 .status.orange { color: #f9a825; }
 .status.red { color: #c62828; }
 
-.message {
-    font-size: 25px;
-    color: #555;
-    margin: 10px 0;
-}
+
 
 .action-box {
     background: #fff8e1;
@@ -91,19 +78,6 @@ button {
     font-size: 15px;
 }
 
-.info-row {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 15px;
-    font-size: 22px;
-}
-
-.money {
-    margin-top: 15px;
-    font-size: 20px;
-    font-weight: bold;
-    color: #2e7d32;
-}
 .ai-box {
     background: #e3f2fd;
     padding: 15px;
@@ -112,6 +86,76 @@ button {
     font-size: 15px;
     color: #0d47a1;
 }
+
+
+.result-card {
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    margin-top: 20px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+.message {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 15px;
+}
+
+.main-action {
+    background: #f1f8e9;
+    border-left: 5px solid #2e7d32;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.action-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #2e7d32;
+    margin-bottom: 5px;
+}
+
+.action-text {
+    font-size: 15px;
+}
+
+.info-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    font-size: 15px;
+}
+
+.insight-box {
+    background: #eef4ff;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 15px;
+}
+
+.insight-title {
+    font-size: 13px;
+    font-weight: bold;
+    color: #1a237e;
+    margin-bottom: 5px;
+}
+
+.insight-text {
+    font-size: 14px;
+    color: #333;
+}
+
+.money {
+    margin-top: 15px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #2e7d32;
+}
+
+
+
 
 </style>
 
@@ -307,32 +351,36 @@ if (status.includes("High")) colorClass = "red";
 let output = `
 <div class="result-card">
 
-<div class="status ${colorClass}">
-${data.icon || "🌱"} ${status}
-</div>
+    <div class="status ${colorClass}">
+        ${data.icon || "🌱"} ${status}
+    </div>
 
-<div class="message">
-${message}
-</div>
+    <div class="message">
+        ${message}
+    </div>
 
-<div class="action-box">
-👉 <b>Action:</b><br>
-${action}
-</div>
+    <div class="main-action">
+        <div class="action-title">Recommended Action</div>
+        <div class="action-text">${action}</div>
+    </div>
 
-<div class="info-row">
-<span>🌡 ${data.temperature ?? "-"}°C</span>
-<span>🌧 ${rainMsg}</span>
-</div>
+    <div class="info-row">
+        <div>🌡 ${data.temperature ?? "-"}°C</div>
+        <div>${rainMsg}</div>
+    </div>
 
-<div class="money">
-💰 Earn up to $${data.carbon_value_usd ?? 0}
-</div>
+    <div class="insight-box">
+        <div class="insight-title">🤖 AI Insight</div>
+        <div class="insight-text">
+            ${data.ai_insight || "Analyzing conditions..."}
+        </div>
+    </div>
 
-<div class="ai-box">
-🤖 <b>AI Insight:</b><br>
-${data.ai_insight || "No insight available"}
-</div>
+    <div class="money">
+        ${data.carbon_value_usd > 0 
+            ? "💰 Earn up to $" + data.carbon_value_usd 
+            : "💰 Low carbon savings today"}
+    </div>
 
 </div>
 `;
