@@ -87,64 +87,130 @@ button {
     color: #0d47a1;
 }
 
-
 .result-card {
-    background: white;
-    border-radius: 16px;
-    padding: 20px;
-    margin-top: 20px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+    background: #f8f9fb;
+    border-radius: 18px;
+    padding: 24px;
+    max-width: 600px;
+    margin: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+}
+
+/* STATUS */
+.status-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    color: #ff9800;
+    font-size: 18px;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    background: #ffeb3b;
+    border-radius: 50%;
 }
 
 .message {
-    font-size: 16px;
+    margin: 8px 0 20px;
     color: #555;
-    margin-bottom: 15px;
+    font-size: 16px;
 }
 
-.main-action {
-    background: #f1f8e9;
-    border-left: 5px solid #2e7d32;
-    padding: 12px;
-    border-radius: 8px;
-    margin-bottom: 15px;
+/* ACTION CARD */
+.action-card {
+    display: flex;
+    gap: 15px;
+    background: #e8f5e9;
+    border-radius: 14px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.action-left {
+    font-size: 26px;
 }
 
 .action-title {
-    font-size: 13px;
-    font-weight: bold;
+    font-size: 14px;
+    font-weight: 600;
     color: #2e7d32;
-    margin-bottom: 5px;
 }
 
 .action-text {
-    font-size: 15px;
+    font-size: 18px;
+    font-weight: 500;
 }
 
-.info-row {
+/* GRID */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+/* INFO CARDS */
+.info-card {
     display: flex;
-    justify-content: space-between;
-    margin: 10px 0;
-    font-size: 15px;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 14px;
 }
 
-.insight-box {
-    background: #eef4ff;
-    border-radius: 10px;
-    padding: 12px;
-    margin-top: 15px;
+.temp-card {
+    background: #e3f2fd;
+}
+
+.rain-card {
+    background: #fff8e1;
+}
+
+.info-icon {
+    font-size: 26px;
+}
+
+.info-title {
+    font-size: 14px;
+    color: #666;
+}
+
+.info-value {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+/* INSIGHT */
+.insight-card {
+    display: flex;
+    gap: 12px;
+    background: #eef3ff;
+    border-radius: 14px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.insight-icon {
+    font-size: 24px;
 }
 
 .insight-title {
-    font-size: 13px;
-    font-weight: bold;
-    color: #1a237e;
-    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #3949ab;
 }
 
 .insight-text {
-    font-size: 14px;
-    color: #333;
+    font-size: 15px;
+}
+
+/* EARNINGS */
+.earnings {
+    margin-top: 20px;
+    font-weight: 600;
+    color: #2e7d32;
+    font-size: 16px;
 }
 
 .money {
@@ -153,8 +219,6 @@ button {
     font-weight: 600;
     color: #2e7d32;
 }
-
-
 
 
 </style>
@@ -351,35 +415,51 @@ if (status.includes("High")) colorClass = "red";
 let output = `
 <div class="result-card">
 
-    <div class="status ${colorClass}">
-        ${data.icon || "🌱"} ${status}
+    <div class="status-row">
+        <span class="status-dot"></span>
+        <span class="status-text">${status}</span>
     </div>
 
     <div class="message">
         ${message}
     </div>
 
-    <div class="main-action">
-        <div class="action-title">Recommended Action</div>
-        <div class="action-text">${action}</div>
-    </div>
-
-    <div class="info-row">
-        <div>🌡 ${data.temperature ?? "-"}°C</div>
-        <div>${rainMsg}</div>
-    </div>
-
-    <div class="insight-box">
-        <div class="insight-title">🤖 AI Insight</div>
-        <div class="insight-text">
-            ${data.ai_insight || "Analyzing conditions..."}
+    <div class="action-card">
+        <div class="action-left">🌿</div>
+        <div>
+            <div class="action-title">Recommended Action</div>
+            <div class="action-text">${action}</div>
         </div>
     </div>
 
-    <div class="money">
-        ${data.carbon_value_usd > 0 
-            ? "💰 Earn up to $" + data.carbon_value_usd 
-            : "💰 Low carbon savings today"}
+    <div class="info-grid">
+        <div class="info-card temp-card">
+            <div class="info-icon">🌡</div>
+            <div>
+                <div class="info-title">Temperature</div>
+                <div class="info-value">${data.temperature ?? "-"}°C</div>
+            </div>
+        </div>
+
+        <div class="info-card rain-card">
+            <div class="info-icon">🌤</div>
+            <div>
+                <div class="info-title">Rain Forecast</div>
+                <div class="info-value">${rainMsg}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="insight-card">
+        <div class="insight-icon">🤖</div>
+        <div>
+            <div class="insight-title">AI Insight</div>
+            <div class="insight-text">${data.ai_insight}</div>
+        </div>
+    </div>
+
+    <div class="earnings">
+        💰 Earn up to $${data.carbon_value_usd ?? 0}
     </div>
 
 </div>
