@@ -202,8 +202,7 @@ def analyze():
              time_to_rain = 48
 
         else:
-            time_to_rain = None
-
+            time_to_rain = 999   # means "no rain expected"
 
 # 🌧 FINAL DECISION BLOCK (FORCE PRIORITY)
 

@@ -272,16 +272,25 @@ function analyzeFarm(){
 let rainMsg = "No rain data";
 
 if (data.time_to_rain !== undefined && data.time_to_rain !== null) {
+
     if (data.time_to_rain === 0) {
         rainMsg = "🌧 It is currently raining";
+
     } else if (data.time_to_rain <= 6) {
         rainMsg = "🌧 Rain expected within hours";
+
     } else if (data.time_to_rain <= 24) {
         rainMsg = "🌦 Rain expected today";
+
+    } else if (data.time_to_rain >= 999) {
+        rainMsg = "☀️ No rain expected";   // ✅ CLEAN FIX
+
     } else {
         rainMsg = "🌤 Rain expected in " + Math.round(data.time_to_rain / 24) + " days";
     }
 }
+
+
     let colorClass = "green";
 if (status.includes("Moderate")) colorClass = "orange";
 if (status.includes("High")) colorClass = "red";
