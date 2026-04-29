@@ -283,7 +283,7 @@ if (data.time_to_rain !== undefined && data.time_to_rain !== null) {
         rainMsg = "🌦 Rain expected today";
 
     } else if (data.time_to_rain >= 999) {
-        rainMsg = "☀️ No rain expected";   // ✅ CLEAN FIX
+       rainMsg = "☀️ No rain expected — irrigation may be required";
 
     } else {
         rainMsg = "🌤 Rain expected in " + Math.round(data.time_to_rain / 24) + " days";
