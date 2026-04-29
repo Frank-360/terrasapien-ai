@@ -232,6 +232,8 @@ def analyze():
         # 📊 Score
         score = min(int((carbon * 10) + (forecast_rain * 2)), 100)
 
+        print("FINAL OUTPUT →", advice, "| time_to_rain:", time_to_rain)
+
         return jsonify({
             "season": season,
             "crop_status": crop_status,
