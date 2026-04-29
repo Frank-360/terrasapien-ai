@@ -1,43 +1,64 @@
 from flask import Flask, request, jsonify
 import requests
-import random
 from flask_cors import CORS
+import datetime
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
+
+# ---------------------------
+# HELPER: RAIN DETECTION
+# ---------------------------
+def is_raining(code):
+    return code in [51, 53, 55, 61, 63, 65, 80, 81, 82]
 
 # ---------------------------
 # WEATHER
 # ---------------------------
 def get_weather_data(lat, lon):
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation&daily=precipitation_sum"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation,weathercode&hourly=precipitation&daily=precipitation_sum&timezone=auto"
+
         data = requests.get(url, timeout=5).json()
 
-        temp = data["current"]["temperature_2m"]
-        rain_today = data["current"]["precipitation"]
+        current = data.get("current", {})
+        hourly = data.get("hourly", {})
 
-        forecast = data["daily"]["precipitation_sum"][:5]
-        total_forecast = sum(forecast)
+        temp = current.get("temperature_2m", 30)
+        current_precip = current.get("precipitation", 0)
+        weather_code = current.get("weathercode", -1)
 
-        return temp, rain_today, total_forecast
+        hourly_precip = hourly.get("precipitation", [])
+        current_hour_rain = hourly_precip[0] if hourly_precip else 0
+
+        daily = data.get("daily", {}).get("precipitation_sum", [])
+
+        forecast_rain = 0
+        rain_day_index = None
+
+        for i, rain in enumerate(daily):
+            if rain > 2:
+                forecast_rain = rain
+                rain_day_index = i
+                break
+
+        return temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index
+
     except Exception as e:
         print("Weather error:", e)
-        return 30, 0, 5
+        return 30, 0, -1, 0, 0, None
 
 # ---------------------------
-# ADVANCED AGRI LOGIC
+# AGRI LOGIC
 # ---------------------------
 def evapotranspiration(temp, crop):
     et0 = 0.0023 * (temp + 17)
-
     kc = {
         "Maize": 1.2,
         "Rice": 1.1,
         "Cassava": 0.9,
         "Millet": 0.7
     }
-
     return et0 * kc.get(crop, 1.0)
 
 def estimate_ai_water_saving(rainfall, temperature, soil):
@@ -77,17 +98,16 @@ def carbon_credits(method, freq, farm_size, reduction):
     return round(credits,4), round(usd_value,2)
 
 # ---------------------------
+# MAIN ROUTE
+# ---------------------------
 @app.route("/analyze", methods=["POST"])
 def analyze():
     try:
-        import datetime
-
         data = request.get_json(silent=True) or {}
 
         lat = data.get("lat", 7.38)
         lon = data.get("lon", 3.93)
 
-        # 🌍 Region
         zone = "North" if lat > 10 else "South"
 
         crop = data.get("crop", "Maize")
@@ -97,28 +117,22 @@ def analyze():
         frequency = data.get("frequency", "Weekly")
 
         # 🌤 Weather
-        temp, rain, forecast = get_weather_data(lat, lon)
-        current_rain = rain or 0
-
-        print("DEBUG → current_rain:", current_rain, "forecast:", forecast)
+        temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
 
         temp = temp or 30
-        forecast = forecast or 5
+        forecast_rain = forecast_rain or 0
 
-        # 🌱 Soil (region-based realism)
+        print("DEBUG:", weather_code, current_hour_rain, forecast_rain)
+
+        # 🌱 Soil
         soil = 0.5 if zone == "North" else 0.7
 
-        # 🌿 Evapotranspiration (REAL CORE)
+        # 🌿 Evapotranspiration
         et = evapotranspiration(temp, crop)
 
-        # 🌧 Daily rainfall
-        # Combine current + forecast rain
-        effective_rain = (current_rain * 0.7) + (forecast * 0.3)
-
+        # 🌧 Rain balance
+        effective_rain = (current_hour_rain * 0.7) + (forecast_rain * 0.3)
         daily_rain = effective_rain / 5
-        water_balance = daily_rain - et
-
-        # 💧 WATER BALANCE ENGINE
         water_balance = daily_rain - et
 
         if zone == "North":
@@ -126,49 +140,38 @@ def analyze():
         else:
             water_balance *= 1.1
 
-        # 🌱 Crop status (NEW INTELLIGENCE)
-        if water_balance < -2:
-            crop_status = "High Water Stress"
-            icon = "🔴"
-        elif water_balance < 0:
-            crop_status = "Moderate Water Stress"
-            icon = "🟡"
-        else:
+        # 🚨 REAL-TIME RAIN OVERRIDE
+        if is_raining(weather_code) or current_hour_rain > 0.2:
             crop_status = "Healthy"
             icon = "🟢"
-
-        # 💧 Irrigation timing engine
-        if crop_status == "High Water Stress":
-            irrigation_hours = 0
-        elif crop_status == "Moderate Water Stress":
-            irrigation_hours = 24
-        else:
-            irrigation_hours = 72
-
-        # 🌱 Advice (now intelligent)
-        if irrigation_hours == 0:
-            advice = "Apply water immediately. Soil moisture is critically low."
-        elif irrigation_hours == 24:
-            advice = "Irrigate within 24 hours to prevent crop stress."
-        else:
-            advice = "No irrigation needed now. Continue monitoring."
-
-       # 👨‍🌾 Farmer message
-        if crop_status == "Healthy":
-            farmer_message = "Your crops are doing well."
-        elif crop_status == "Moderate Water Stress":
-            farmer_message = "Your crops are starting to dry."
-        else:
-            farmer_message = "Your crops are very dry. Water them now."
-
-        # 🚨 REAL-TIME RAIN OVERRIDE (CRITICAL FIX)
-        if current_rain > 0.1:
-            crop_status = "Healthy"
-            icon = "🟢"
-            farmer_message = "It is currently raining on your farm."
+            farmer_message = "🌧️ It is currently raining on your farm. No irrigation needed."
             advice = "No irrigation needed. Rain is already watering your crops."
-        # 🌿 Improved NDVI (based on rainfall)
-        ndvi = min(max((forecast / 50), 0.2), 0.8)
+
+        else:
+            # 🌱 Crop status
+            if water_balance < -2:
+                crop_status = "High Water Stress"
+                icon = "🔴"
+            elif water_balance < 0:
+                crop_status = "Moderate Water Stress"
+                icon = "🟡"
+            else:
+                crop_status = "Healthy"
+                icon = "🟢"
+
+            # 💧 Irrigation advice
+            if crop_status == "High Water Stress":
+                advice = "Apply water immediately. Soil moisture is critically low."
+                farmer_message = "Your crops are very dry. Water them now."
+            elif crop_status == "Moderate Water Stress":
+                advice = "Irrigate within 24 hours to prevent crop stress."
+                farmer_message = "Your crops are starting to dry."
+            else:
+                advice = "No irrigation needed now. Continue monitoring."
+                farmer_message = "Your crops are doing well."
+
+        # 🌿 NDVI
+        ndvi = min(max((forecast_rain / 50), 0.2), 0.8)
 
         if ndvi > 0.6:
             veg = "Healthy vegetation"
@@ -178,29 +181,30 @@ def analyze():
             veg = "Poor vegetation"
 
         # 🤖 Water saving
-        reduction = max(estimate_ai_water_saving(forecast, temp, soil), 10)
+        reduction = max(estimate_ai_water_saving(forecast_rain, temp, soil), 10)
 
         # 🌍 Carbon
         carbon = estimate_carbon(farm_size, crop)
         credits, usd = carbon_credits(method, frequency, farm_size, reduction)
 
-       
-             # 🌧 Rain timing (REAL-TIME FIXED)
-        if current_rain > 0.1:
-             time_to_rain = 0
-        elif forecast > 10:
+        # 🌧 Rain timing
+        if is_raining(weather_code) or current_hour_rain > 0.2:
+            time_to_rain = 0
+        elif forecast_rain > 10:
             time_to_rain = 6
-        elif forecast > 5:
+        elif forecast_rain > 5:
             time_to_rain = 24
+        elif forecast_rain > 0:
+            time_to_rain = 48
         else:
-             time_to_rain = 48
+            time_to_rain = None
 
         # 🌱 Season
         month = datetime.datetime.now().month
         season = "Dry Season" if month in [11,12,1,2,3] else "Rainy Season"
 
         # 📊 Score
-        score = min(int((carbon * 10) + (forecast * 2)), 100)
+        score = min(int((carbon * 10) + (forecast_rain * 2)), 100)
 
         return jsonify({
             "season": season,
@@ -209,7 +213,7 @@ def analyze():
             "advice": advice,
             "icon": icon,
             "temperature": temp,
-            "rain_5days": round(forecast, 2),
+            "rain_5days": round(forecast_rain, 2),
             "time_to_rain": time_to_rain,
             "ndvi": ndvi,
             "vegetation_status": veg,
@@ -219,5 +223,12 @@ def analyze():
             "carbon_value_usd": usd,
             "climate_score": score
         })
+
     except Exception as e:
-                return jsonify({"error": str(e)})
+        return jsonify({"error": str(e)})
+
+# ---------------------------
+# RUN
+# ---------------------------
+if __name__ == "__main__":
+    app.run(debug=True)
