@@ -24,7 +24,10 @@ def get_weather_data(lat, lon):
         current = data.get("current", {})
         hourly = data.get("hourly", {})
 
-        temp = current.get("temperature_2m", 30)
+        temp = current.get("temperature_2m")
+# SAFE fallback (DO NOT REMOVE)
+        if temp is None:
+            temp = 30
         current_precip = current.get("precipitation", 0)
         weather_code = current.get("weathercode", -1)
 
