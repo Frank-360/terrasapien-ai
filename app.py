@@ -17,14 +17,37 @@ def is_raining(code):
 # ---------------------------
 def get_weather_data(lat, lon):
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation,weathercode&hourly=precipitation&daily=precipitation_sum&timezone=auto"
-
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation,weathercode&hourly=temperature_2m,precipitation&daily=precipitation_sum&timezone=auto"
         data = requests.get(url, timeout=5).json()
+        if not data or "current" not in data:
+            print("⚠️ Weather API failed")
+        return 28, 0, -1, 0, 0, None
 
         current = data.get("current", {})
         hourly = data.get("hourly", {})
 
-        temp = current.get("temperature_2m", 30)
+        hourly_temp = hourly.get("temperature_2m", [])
+
+        if hourly_temp and len(hourly_temp) > 1:
+            temp = (hourly_temp[0] + hourly_temp[1]) / 2
+        elif hourly_temp:
+             temp = hourly_temp[0]
+        else:
+            temp = current.get("temperature_2m")
+            # ✅ THEN fallback (if still None)
+        if temp is None:
+            hour = datetime.datetime.now().hour
+
+        if hour < 12:
+            temp = 25
+        elif hour < 16:
+            temp = 32
+        else:
+            temp = 28
+# Debug
+        print("TEMP:", temp)
+        print("HOURLY:", hourly_temp[:3])
+
         current_precip = current.get("precipitation", 0)
         weather_code = current.get("weathercode", -1)
 
@@ -119,7 +142,6 @@ def analyze():
         # 🌤 Weather
         temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
 
-        temp = temp or 30
         forecast_rain = forecast_rain or 0
 
         print("DEBUG:", weather_code, current_hour_rain, forecast_rain)
@@ -159,17 +181,6 @@ def analyze():
                 crop_status = "Healthy"
                 icon = "🟢"
 
-            # 💧 Irrigation advice
-            if crop_status == "High Water Stress":
-                advice = "Apply water immediately. Soil moisture is critically low."
-                farmer_message = "Your crops are very dry. Water them now."
-            elif crop_status == "Moderate Water Stress":
-                advice = "Irrigate within 24 hours to prevent crop stress."
-                farmer_message = "Your crops are starting to dry."
-            else:
-                advice = "No irrigation needed now. Continue monitoring."
-                farmer_message = "Your crops are doing well."
-
         # 🌿 NDVI
         ndvi = min(max((forecast_rain / 50), 0.2), 0.8)
 
@@ -202,7 +213,8 @@ def analyze():
              time_to_rain = 48
 
         else:
-            time_to_rain = 999   # means "no rain expected"
+            time_to_rain = None
+            no_rain = True  # means "no rain expected"
 
 # 🌧 FINAL DECISION BLOCK (FORCE PRIORITY)
 
