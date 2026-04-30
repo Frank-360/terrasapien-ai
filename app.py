@@ -17,39 +17,14 @@ def is_raining(code):
 # ---------------------------
 def get_weather_data(lat, lon):
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation,weathercode&hourly=temperature_2m,precipitation&daily=precipitation_sum&timezone=auto"
+        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation,weathercode&hourly=precipitation&daily=precipitation_sum&timezone=auto"
+
         data = requests.get(url, timeout=5).json()
-        if not data or "current" not in data:
-            print("⚠️ Weather API failed")
 
         current = data.get("current", {})
         hourly = data.get("hourly", {})
 
-        hourly_temp = hourly.get("temperature_2m", [])
-
-        if hourly_temp and len(hourly_temp) > 1:
-            temp = (hourly_temp[0] + hourly_temp[1]) / 2
-
-        if hourly_temp:
-            temp = hourly_temp[0]   # most recent hour
-        else:
-            temp = current.get("temperature_2m")
-
-            # ✅ THEN fallback (if still None)
-        if temp is None:
-            import datetime
-            hour = datetime.datetime.now().hour
-
-        if hour < 12:
-            temp = 25
-        elif hour < 16:
-            temp = 32
-        else:
-            temp = 28
-# Debug
-        print("TEMP:", temp)
-        print("HOURLY:", hourly_temp[:3])
-
+        temp = current.get("temperature_2m", 30)
         current_precip = current.get("precipitation", 0)
         weather_code = current.get("weathercode", -1)
 
@@ -144,19 +119,7 @@ def analyze():
         # 🌤 Weather
         temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
 
-        import datetime
-
-        if temp is None:
-            hour = datetime.datetime.now().hour
-
-        if hour < 12:
-            temp = 24 + (hash(str(lat)) % 4)   # morning
-        elif hour < 16:
-            temp = 30 + (hash(str(lon)) % 3)   # afternoon
-        else:
-            temp = 27 + (hash(str(lat+lon)) % 3)  # evening
-
-
+        temp = temp or 30
         forecast_rain = forecast_rain or 0
 
         print("DEBUG:", weather_code, current_hour_rain, forecast_rain)
