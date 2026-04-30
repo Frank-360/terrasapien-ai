@@ -501,9 +501,13 @@ let output = `
         </div>
     </div>
 
-    <div class="earnings">
-        💰 Earn up to $${data.carbon_value_usd ?? 0}
-    </div>
+    <span>
+💰 ${
+    data.carbon_value_usd > 0.1
+    ? "Earn up to $" + data.carbon_value_usd
+    : "Carbon savings are low today"
+}
+</span>
 
 </div>
 `;
