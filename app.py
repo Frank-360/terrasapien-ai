@@ -17,23 +17,55 @@ def is_raining(code):
 # ---------------------------
 def get_weather_data(lat, lon):
     try:
-        url = f"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,precipitation,weathercode&hourly=precipitation&daily=precipitation_sum&timezone=auto"
+        url = (
+            f"https://api.open-meteo.com/v1/forecast?"
+            f"latitude={lat}"
+            f"&longitude={lon}"
+            f"&current=temperature_2m,precipitation,weathercode"
+            f"&hourly=temperature_2m,precipitation"
+            f"&daily=precipitation_sum"
+            f"&timezone=auto"
+        )
 
-        data = requests.get(url, timeout=5).json()
+        response = requests.get(url, timeout=10)
+        data = response.json()
 
         current = data.get("current", {})
         hourly = data.get("hourly", {})
 
+        # -----------------------------
+        # TEMPERATURE FIX
+        # -----------------------------
         temp = current.get("temperature_2m")
-# SAFE fallback (DO NOT REMOVE)
+
+        # DEBUGGING
+        print("RAW CURRENT:", current)
+
+        # If current temp missing, use hourly fallback
+        if temp is None:
+            hourly_temp = hourly.get("temperature_2m", [])
+
+            if hourly_temp:
+                temp = hourly_temp[0]
+                print("Using hourly fallback temp:", temp)
+
+        # Final emergency fallback
         if temp is None:
             temp = 30
+            print("⚠️ API temp missing. Using emergency fallback.")
+
+        # -----------------------------
+        # RAIN DATA
+        # -----------------------------
         current_precip = current.get("precipitation", 0)
         weather_code = current.get("weathercode", -1)
 
         hourly_precip = hourly.get("precipitation", [])
         current_hour_rain = hourly_precip[0] if hourly_precip else 0
 
+        # -----------------------------
+        # FORECAST RAIN
+        # -----------------------------
         daily = data.get("daily", {}).get("precipitation_sum", [])
 
         forecast_rain = 0
@@ -45,10 +77,20 @@ def get_weather_data(lat, lon):
                 rain_day_index = i
                 break
 
-        return temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index
+        print("FINAL TEMP:", temp)
+
+        return (
+            temp,
+            current_precip,
+            weather_code,
+            current_hour_rain,
+            forecast_rain,
+            rain_day_index
+        )
 
     except Exception as e:
         print("Weather error:", e)
+
         return 30, 0, -1, 0, 0, None
 
 # ---------------------------
@@ -122,6 +164,8 @@ def analyze():
         # 🌤 Weather
         temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
 
+        print("LIVE TEMP:", temp)
+        
         temp = temp or 30
         forecast_rain = forecast_rain or 0
 
