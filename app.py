@@ -189,6 +189,23 @@ def analyze():
 
         print("DEBUG:", weather_code, current_hour_rain, forecast_rain)
 
+# 💧 Simulated Soil Moisture Score
+
+        soil_moisture = 70
+
+# Rain increases moisture
+        soil_moisture += recent_rain * 2
+
+# Temperature dries soil
+        soil_moisture -= temp * 0.4
+
+# Clamp between 0 and 100
+        soil_moisture = max(0, min(100, soil_moisture))
+
+        print("SOIL MOISTURE:", soil_moisture)
+
+
+
         # 🌱 Soil
         soil = 0.5 if zone == "North" else 0.7
 
@@ -204,6 +221,39 @@ def analyze():
             water_balance *= 0.8
         else:
             water_balance *= 1.1
+
+
+        # 💧 Simulated Soil Moisture Score
+
+            soil_moisture = 70
+
+# Recent rainfall increases moisture
+            soil_moisture += recent_rain * 2
+
+# Water balance affects moisture
+            soil_moisture += water_balance * 5
+
+# Higher temperatures dry soil faster
+            soil_moisture -= temp * 0.3
+
+# Keep within realistic bounds
+            soil_moisture = max(0, min(100, soil_moisture))
+
+        print("SOIL MOISTURE:", soil_moisture)
+
+
+# 🌱 Crop Health Based on Soil Moisture
+
+        if soil_moisture >= 70:
+            crop_status = "Healthy"
+
+        elif soil_moisture >= 45:
+            crop_status = "Moderate Water Stress"
+
+        else:
+            crop_status = "High Water Stress"
+
+
 
         # 🚨 REAL-TIME RAIN OVERRIDE
         if is_raining(weather_code) or current_hour_rain > 0.2:
