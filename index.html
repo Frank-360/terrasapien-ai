@@ -546,28 +546,28 @@ document.getElementById("result").innerHTML = output;
     document.getElementById("result").innerHTML = "❌ Server error";
 });
 
-    const soilElement = document.getElementById("soil-moisture");
+   const soilElement = document.getElementById("soil-moisture");
 
-soilElement.innerHTML =
-    `💧 Soil Moisture: ${data.soil_moisture}%`;
+        soilElement.innerHTML =
+        `💧 Soil Moisture: ${result.soil_moisture}%`;
 
-soilElement.classList.remove(
-    "moisture-high",
-    "moisture-medium",
-    "moisture-low"
-);
+        soilElement.classList.remove(
+            "moisture-high",
+            "moisture-medium",
+            "moisture-low"
+        );
 
-if (data.soil_moisture >= 70) {
-    soilElement.classList.add("moisture-high");
-}
-else if (data.soil_moisture >= 45) {
-    soilElement.classList.add("moisture-medium");
-}
-else {
-    soilElement.classList.add("moisture-low");
-}
+        if (result.soil_moisture >= 70) {
+            soilElement.classList.add("moisture-high");
+        }
+        else if (result.soil_moisture >= 45) {
+            soilElement.classList.add("moisture-medium");
+        }   
+        else {
+            soilElement.classList.add("moisture-low");
+        }
 
-console.log("SOIL MOISTURE:", data.soil_moisture);
+        console.log("SOIL MOISTURE:", result.soil_moisture);
 
 } // ✅ CLOSE analyzeFarm function
 
