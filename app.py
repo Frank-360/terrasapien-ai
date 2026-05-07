@@ -396,6 +396,7 @@ def analyze():
             "carbon_credits": credits,
             "carbon_value_usd": usd,
             "climate_score": score,
+            "soil_moisture": round(soil_moisture, 1),
             "ai_insight": ai_insight,   # ✅ ADD THIS LINE
         })
 

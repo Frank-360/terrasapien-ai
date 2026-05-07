@@ -224,6 +224,27 @@ button {
     overflow-wrap: break-word;
 }
 
+#soil-moisture {
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin-top: 8px;
+    color: #00d084;
+}
+
+
+.moisture-high {
+    color: #00d084;
+}
+
+.moisture-medium {
+    color: #ffb020;
+}
+
+.moisture-low {
+    color: #ff4d4f;
+}
+
+
 /* INSIGHT */
 .insight-card {
     display: flex;
@@ -413,6 +434,8 @@ function analyzeFarm(){
         return;
     }
 
+    const soilMoisture = data.soil_moisture;
+
     let status = data.crop_status || "Unknown";
 
     let message = "";
@@ -493,6 +516,11 @@ let output = `
         </div>
     </div>
 
+        <div class="result-card">
+            <h3>💧 Soil Moisture</h3>
+            <p id="soil-moisture"></p>
+         </div>
+
     <div class="insight-card">
         <div class="insight-icon">🤖</div>
         <div>
@@ -517,6 +545,28 @@ document.getElementById("result").innerHTML = output;
 .catch(()=>{
     document.getElementById("result").innerHTML = "❌ Server error";
 });
+
+    const soilElement = document.getElementById("soil-moisture");
+
+soilElement.innerHTML =
+    `💧 Soil Moisture: ${data.soil_moisture}%`;
+
+soilElement.classList.remove(
+    "moisture-high",
+    "moisture-medium",
+    "moisture-low"
+);
+
+if (data.soil_moisture >= 70) {
+    soilElement.classList.add("moisture-high");
+}
+else if (data.soil_moisture >= 45) {
+    soilElement.classList.add("moisture-medium");
+}
+else {
+    soilElement.classList.add("moisture-low");
+}
+
 } // ✅ CLOSE analyzeFarm function
 
     </script>
