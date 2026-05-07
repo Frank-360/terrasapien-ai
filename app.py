@@ -24,36 +24,53 @@ def get_weather_data(lat, lon):
             f"&current=temperature_2m,precipitation,weathercode"
             f"&hourly=temperature_2m,precipitation"
             f"&daily=precipitation_sum"
+            f"&past_hours=12"
+            f"&forecast_hours=12"
             f"&timezone=auto"
-        )
+)
 
         response = requests.get(url, timeout=10)
         data = response.json()
 
+        print("FULL API RESPONSE:", data)
+
         current = data.get("current", {})
         hourly = data.get("hourly", {})
 
-        # -----------------------------
-        # TEMPERATURE FIX
-        # -----------------------------
+        print("CURRENT OBJECT:", current)
+        print("TEMP FIELD:", current.get("temperature_2m"))
+        print("CURRENT WEATHER:", data.get("current_weather"))
+
+        
+# TEMPERATURE FIX
+# -----------------------------
+
+# Try primary source
         temp = current.get("temperature_2m")
 
-        # DEBUGGING
         print("RAW CURRENT:", current)
+        print("TEMP FIELD:", temp)
+        print("CURRENT WEATHER:", data.get("current_weather"))
 
-        # If current temp missing, use hourly fallback
+# If current temp missing, use hourly fallback
         if temp is None:
             hourly_temp = hourly.get("temperature_2m", [])
 
-            if hourly_temp:
-                temp = hourly_temp[0]
-                print("Using hourly fallback temp:", temp)
+        if hourly_temp:
+            temp = hourly_temp[0]
+            print("Using hourly fallback temp:", temp)
 
-        # Final emergency fallback
+# If still missing, use current_weather backup
         if temp is None:
-            temp = 30
-            print("⚠️ API temp missing. Using emergency fallback.")
+            temp = data.get("current_weather", {}).get("temperature")
+            print("Using current_weather fallback:", temp)
 
+# Final emergency fallback
+        if temp is None:
+            print("⚠️ Temperature missing. Using fallback.")
+            temp = 30
+
+            print("FINAL TEMP:", temp)
         # -----------------------------
         # RAIN DATA
         # -----------------------------
@@ -62,6 +79,11 @@ def get_weather_data(lat, lon):
 
         hourly_precip = hourly.get("precipitation", [])
         current_hour_rain = hourly_precip[0] if hourly_precip else 0
+
+# 🌧 Rain accumulated in past hours
+        recent_rain = sum(hourly_precip[:12]) if hourly_precip else 0
+
+        print("RECENT RAIN:", recent_rain)
 
         # -----------------------------
         # FORECAST RAIN
@@ -84,6 +106,7 @@ def get_weather_data(lat, lon):
             current_precip,
             weather_code,
             current_hour_rain,
+            recent_rain,
             forecast_rain,
             rain_day_index
         )
@@ -162,10 +185,10 @@ def analyze():
         frequency = data.get("frequency", "Weekly")
 
         # 🌤 Weather
-        temp, current_precip, weather_code, current_hour_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
+        temp, current_precip, weather_code, current_hour_rain, recent_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
 
         print("LIVE TEMP:", temp)
-        
+
         temp = temp or 30
         forecast_rain = forecast_rain or 0
 
@@ -236,20 +259,31 @@ def analyze():
 
  # 🌧 Rain timing (FIXED THRESHOLDS)
 
+        # 🌧 Rain timing intelligence
+
+# Rain happening now
         if is_raining(weather_code) or current_hour_rain > 0.2:
-             time_to_rain = 0
+            time_to_rain = 0
 
+# Heavy recent rainfall (soil still moist)
+        elif recent_rain >= 5:
+            time_to_rain = 12
+
+# Strong rain forecast soon
+        elif forecast_rain >= 8:
+            time_to_rain = 6
+
+# Moderate rain forecast
         elif forecast_rain >= 3:
-            time_to_rain = 6   # rain soon (THIS WAS YOUR PROBLEM)
+            time_to_rain = 24
 
-        elif forecast_rain >= 1:
-             time_to_rain = 24  # moderate chance
-
+# Light rain possibility
         elif forecast_rain > 0:
-             time_to_rain = 48
+            time_to_rain = 48
 
+# No meaningful rain expected
         else:
-            time_to_rain = 999   # means "no rain expected"
+            time_to_rain = 999
 
 # 🌧 FINAL DECISION BLOCK (FORCE PRIORITY)
 
