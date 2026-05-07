@@ -351,23 +351,32 @@ def analyze():
 
        # 🤖 AI Insight (ALWAYS ASSIGNED)
 
-        if time_to_rain == 0:
-             ai_insight = "Rain is already providing sufficient water."
 
-        elif time_to_rain is not None and time_to_rain <= 6:
-            ai_insight = "Rain is expected soon, so irrigation can be delayed."
+        if soil_moisture >= 70 and forecast_rain >= 3:
+             ai_insight = (
+        "Recent rainfall and favorable moisture conditions "
+        "are supporting healthy crop growth."
+        )
 
-        elif time_to_rain is not None and time_to_rain <= 24:
-            ai_insight = "Rain may occur today, monitor soil before irrigating."
+        elif soil_moisture >= 70:
+            ai_insight = (
+                "Soil moisture remains healthy despite current temperatures."
+            )
 
-        elif crop_status == "High Water Stress":
-            ai_insight = "Crops are under severe stress due to low moisture."
+        elif soil_moisture >= 45 and forecast_rain >= 3:
+            ai_insight = (
+                "Rainfall expected soon may help stabilize declining soil moisture."
+            )
 
-        elif crop_status == "Moderate Water Stress":
-             ai_insight = "Soil moisture is decreasing and may affect crop growth."
+        elif soil_moisture >= 45:
+            ai_insight = (
+                "Soil moisture is gradually decreasing under current weather conditions."
+            )
 
         else:
-            ai_insight = "Conditions are stable with no immediate risk."
+            ai_insight = (
+                "High temperatures and limited rainfall are increasing crop water stress."
+            )
 
         # 🌱 Season
         month = datetime.datetime.now().month
