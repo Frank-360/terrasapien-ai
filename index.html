@@ -246,6 +246,49 @@ button {
     font-weight: 700;
 }
 
+.climate-card {
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9);
+    border-radius: 16px;
+    padding: 18px;
+    margin-top: 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+}
+
+.climate-icon {
+    font-size: 30px;
+}
+
+.climate-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2e7d32;
+    margin-bottom: 8px;
+}
+
+.climate-metric {
+    font-size: 15px;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.sustainability-high {
+    color: #00c853;
+    font-weight: bold;
+}
+
+.sustainability-medium {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.sustainability-low {
+    color: #ff5252;
+    font-weight: bold;
+}
+
 
 /* INSIGHT */
 .insight-card {
@@ -535,6 +578,33 @@ let output = `
         </div>
     </div>
 
+<div class="climate-card">
+
+    <div class="climate-icon">🌍</div>
+
+    <div>
+        <div class="climate-title">
+            Climate Impact
+        </div>
+
+        <div class="climate-metric">
+            💧 Water Saved:
+            <span id="water-saved"></span>L
+        </div>
+
+        <div class="climate-metric">
+            ♻️ CO₂ Avoided:
+            <span id="co2-avoided"></span>kg
+        </div>
+
+        <div class="climate-metric">
+            🌱 Sustainability:
+            <span id="sustainability"></span>
+        </div>
+    </div>
+
+</div>
+
     <span>
 💰 ${
     data.carbon_value_usd > 0.1
@@ -571,13 +641,34 @@ else {
 
 console.log("SOIL MOISTURE:", data.soil_moisture);
 
-})
+
+document.getElementById("water-saved").innerHTML =
+    data.water_saved;
+
+document.getElementById("co2-avoided").innerHTML =
+    data.co2_avoided;
+
+const sustainabilityElement =
+    document.getElementById("sustainability");
+
+sustainabilityElement.innerHTML =
+    data.sustainability;
+
+if (data.sustainability === "High") {
+    sustainabilityElement.classList.add("sustainability-high");
+}
+else if (data.sustainability === "Moderate") {
+    sustainabilityElement.classList.add("sustainability-medium");
+}
+else {
+    sustainabilityElement.classList.add("sustainability-low");
+}
+
+}) // ✅ CLOSE .then(data => {
 
 .catch(()=>{
     document.getElementById("result").innerHTML = "❌ Server error";
 });
-
-
 } // ✅ CLOSE analyzeFarm function
 
     </script>

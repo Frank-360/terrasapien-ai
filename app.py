@@ -253,6 +253,42 @@ def analyze():
         else:
             crop_status = "High Water Stress"
 
+# 🌍 Climate Impact Intelligence
+
+# 💧 Estimated Water Savings (Liters)
+
+        water_saved = 0
+
+        if soil_moisture >= 70:
+            water_saved = 150
+
+        elif soil_moisture >= 45:
+            water_saved = 70
+
+        else:
+            water_saved = 10
+
+
+        # ♻️ Estimated CO₂ Avoided (kg)
+
+        co2_avoided = round(water_saved * 0.004, 2)
+
+
+        # 🌱 Sustainability Score
+
+        if soil_moisture >= 70:
+            sustainability = "High"
+
+        elif soil_moisture >= 45:
+            sustainability = "Moderate"
+
+        else:
+            sustainability = "Low"
+
+
+        print("WATER SAVED:", water_saved)
+        print("CO2 AVOIDED:", co2_avoided)
+        print("SUSTAINABILITY:", sustainability)
 
 
         # 🚨 REAL-TIME RAIN OVERRIDE
@@ -406,6 +442,9 @@ def analyze():
             "carbon_value_usd": usd,
             "climate_score": score,
             "soil_moisture": round(soil_moisture, 1),
+            "water_saved": water_saved,
+            "co2_avoided": co2_avoided,
+            "sustainability": sustainability,
             "ai_insight": ai_insight,   # ✅ ADD THIS LINE
         })
 
