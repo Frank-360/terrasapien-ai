@@ -224,14 +224,6 @@ button {
     overflow-wrap: break-word;
 }
 
-#soil-moisture {
-    font-size: 1.4rem;
-    font-weight: bold;
-    margin-top: 8px;
-    color: #00d084;
-}
-
-
 .moisture-high {
     color: #00d084;
 }
@@ -242,6 +234,16 @@ button {
 
 .moisture-low {
     color: #ff4d4f;
+}
+
+.moisture-card {
+    background: #eefaf3;
+    margin-top: 15px;
+}
+
+#soil-moisture {
+    font-size: 22px;
+    font-weight: 700;
 }
 
 
@@ -516,10 +518,14 @@ let output = `
         </div>
     </div>
 
-        <div class="result-card">
-            <h3>💧 Soil Moisture</h3>
-            <p id="soil-moisture"></p>
-         </div>
+        <div class="info-card moisture-card">
+            <div class="info-icon">💧</div>
+
+            <div>
+        <div class="info-title">Soil Moisture</div>
+        <div class="info-value" id="soil-moisture"></div>
+        </div>
+    </div>
 
     <div class="insight-card">
         <div class="insight-icon">🤖</div>
@@ -545,7 +551,7 @@ document.getElementById("result").innerHTML = output;
 const soilElement = document.getElementById("soil-moisture");
 
 soilElement.innerHTML =
-    `💧 Soil Moisture: ${data.soil_moisture}%`;
+    `${data.soil_moisture}%`;
 
 soilElement.classList.remove(
     "moisture-high",
