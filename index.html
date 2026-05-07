@@ -541,33 +541,36 @@ let output = `
 `;
 
 document.getElementById("result").innerHTML = output;
+
+const soilElement = document.getElementById("soil-moisture");
+
+soilElement.innerHTML =
+    `💧 Soil Moisture: ${data.soil_moisture}%`;
+
+soilElement.classList.remove(
+    "moisture-high",
+    "moisture-medium",
+    "moisture-low"
+);
+
+if (data.soil_moisture >= 70) {
+    soilElement.classList.add("moisture-high");
+}
+else if (data.soil_moisture >= 45) {
+    soilElement.classList.add("moisture-medium");
+}
+else {
+    soilElement.classList.add("moisture-low");
+}
+
+console.log("SOIL MOISTURE:", data.soil_moisture);
+
 })
+
 .catch(()=>{
     document.getElementById("result").innerHTML = "❌ Server error";
 });
 
-   const soilElement = document.getElementById("soil-moisture");
-
-        soilElement.innerHTML =
-            `💧 Soil Moisture: ${data.soil_moisture}%`;
-
-        soilElement.classList.remove(
-            "moisture-high",
-            "moisture-medium",
-            "moisture-low"
-        );
-
-        if (data.soil_moisture >= 70) {
-            soilElement.classList.add("moisture-high");
-        }
-        else if (data.soil_moisture >= 45) {
-            soilElement.classList.add("moisture-medium");
-        }
-        else {
-            soilElement.classList.add("moisture-low");
-        }
-
-        console.log("SOIL MOISTURE:", data.soil_moisture);
 
 } // ✅ CLOSE analyzeFarm function
 
