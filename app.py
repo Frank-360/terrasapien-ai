@@ -1,3 +1,4 @@
+WEATHER_API_KEY = "aeda27a55450439591c91757260705"
 from flask import Flask, request, jsonify
 import requests
 from flask_cors import CORS
@@ -18,84 +19,73 @@ def is_raining(code):
 def get_weather_data(lat, lon):
     try:
         url = (
-            f"https://api.open-meteo.com/v1/forecast?"
-            f"latitude={lat}"
-            f"&longitude={lon}"
-            f"&current=temperature_2m,precipitation,weathercode"
-            f"&hourly=temperature_2m,precipitation"
-            f"&daily=precipitation_sum"
-            f"&past_hours=12"
-            f"&forecast_hours=12"
-            f"&timezone=auto"
-)
+            f"http://api.weatherapi.com/v1/forecast.json?"
+            f"key={WEATHER_API_KEY}"
+            f"&q={lat},{lon}"
+            f"&days=3"
+            f"&aqi=no"
+            f"&alerts=no"
+        )
 
         response = requests.get(url, timeout=10)
         data = response.json()
 
         print("FULL API RESPONSE:", data)
 
+        # 🚨 API error handling
+        if "error" in data:
+            print("API ERROR:", data["error"])
+            return None, None, None, None, None, None, None
+
         current = data.get("current", {})
-        hourly = data.get("hourly", {})
+        forecast = data.get("forecast", {}).get("forecastday", [])
 
-        print("CURRENT OBJECT:", current)
-        print("TEMP FIELD:", current.get("temperature_2m"))
-        print("CURRENT WEATHER:", data.get("current_weather"))
-
-        
-# TEMPERATURE FIX
-# -----------------------------
-
-# Try primary source
-        temp = current.get("temperature_2m")
-
-        print("RAW CURRENT:", current)
-        print("TEMP FIELD:", temp)
-        print("CURRENT WEATHER:", data.get("current_weather"))
-
-# If current temp missing, use hourly fallback
-        if temp is None:
-            hourly_temp = hourly.get("temperature_2m", [])
-
-        if hourly_temp:
-            temp = hourly_temp[0]
-            print("Using hourly fallback temp:", temp)
-
-# If still missing, use current_weather backup
-        if temp is None:
-            temp = data.get("current_weather", {}).get("temperature")
-            print("Using current_weather fallback:", temp)
-
-# Final emergency fallback
-        if temp is None:
-            print("⚠️ Temperature missing. Using fallback.")
-            temp = 30
-
-            print("FINAL TEMP:", temp)
         # -----------------------------
-        # RAIN DATA
+        # TEMPERATURE
         # -----------------------------
-        current_precip = current.get("precipitation", 0)
-        weather_code = current.get("weathercode", -1)
+        temp = current.get("temp_c")
 
-        hourly_precip = hourly.get("precipitation", [])
-        current_hour_rain = hourly_precip[0] if hourly_precip else 0
+        print("LIVE TEMP:", temp)
 
-# 🌧 Rain accumulated in past hours
-        recent_rain = sum(hourly_precip[:12]) if hourly_precip else 0
+        # -----------------------------
+        # CURRENT RAIN
+        # -----------------------------
+        current_precip = current.get("precip_mm", 0)
+
+        condition_text = current.get("condition", {}).get("text", "").lower()
+
+        weather_code = 1 if "rain" in condition_text else 0
+
+        # -----------------------------
+        # HOURLY DATA
+        # -----------------------------
+        recent_rain = 0
+        current_hour_rain = current_precip
+
+        if forecast:
+
+            hourly_data = forecast[0].get("hour", [])
+
+            # Last 12 hours rainfall
+            recent_rain = sum(
+                hour.get("precip_mm", 0)
+                for hour in hourly_data[-12:]
+            )
 
         print("RECENT RAIN:", recent_rain)
 
         # -----------------------------
         # FORECAST RAIN
         # -----------------------------
-        daily = data.get("daily", {}).get("precipitation_sum", [])
-
         forecast_rain = 0
         rain_day_index = None
 
-        for i, rain in enumerate(daily):
-            if rain > 2:
-                forecast_rain = rain
+        for i, day in enumerate(forecast):
+
+            total_rain = day.get("day", {}).get("totalprecip_mm", 0)
+
+            if total_rain > 2:
+                forecast_rain = total_rain
                 rain_day_index = i
                 break
 
@@ -114,7 +104,7 @@ def get_weather_data(lat, lon):
     except Exception as e:
         print("Weather error:", e)
 
-        return 30, 0, -1, 0, 0, None
+        return None, None, None, None, None, None, None
 
 # ---------------------------
 # AGRI LOGIC
@@ -184,12 +174,17 @@ def analyze():
         method = data.get("method", "Manual (bucket)")
         frequency = data.get("frequency", "Weekly")
 
-        # 🌤 Weather
+       # 🌤 Weather
         temp, current_precip, weather_code, current_hour_rain, recent_rain, forecast_rain, rain_day_index = get_weather_data(lat, lon)
+
+# 🚨 Weather API failed
+        if temp is None:
+            return jsonify({
+        "error": "Weather service temporarily unavailable. Please try again later."
+        })
 
         print("LIVE TEMP:", temp)
 
-        temp = temp or 30
         forecast_rain = forecast_rain or 0
 
         print("DEBUG:", weather_code, current_hour_rain, forecast_rain)
