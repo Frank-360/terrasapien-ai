@@ -54,8 +54,15 @@ def get_weather_data(lat, lon):
 
         condition_text = current.get("condition", {}).get("text", "").lower()
 
-        weather_code = 1 if "rain" in condition_text else 0
+# 🌧 Only count as raining if actual precipitation exists
+        if current_precip > 0.2:
+             weather_code = 1
+        else:
+             weather_code = 0
 
+        print("CONDITION:", condition_text)
+        print("CURRENT PRECIP:", current_precip)
+        print("WEATHER CODE:", weather_code)
         # -----------------------------
         # HOURLY DATA
         # -----------------------------
