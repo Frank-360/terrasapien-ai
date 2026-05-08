@@ -299,11 +299,22 @@ def analyze():
 
 
         # 🚨 REAL-TIME RAIN OVERRIDE
-        if is_raining(weather_code) or current_hour_rain > 0.2:
+        # 🚨 REAL-TIME RAIN OVERRIDE
+
+        if current_precip > 0.5:
+
             crop_status = "Healthy"
             icon = "🟢"
-            farmer_message = "🌧️ It is currently raining on your farm. No irrigation needed."
-            advice = "No irrigation needed. Rain is already watering your crops."
+
+            farmer_message = (
+            "🌧️ It is currently raining on your farm. "
+            "No irrigation needed."
+            )
+
+            advice = (
+                "No irrigation needed. "
+                "Rain is already watering your crops."
+            )
 
         else:
             # 🌱 Crop status
