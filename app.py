@@ -375,7 +375,7 @@ def analyze():
 
 # 🌧 FINAL DECISION BLOCK (FORCE PRIORITY)
 
-        if time_to_rain == 0:
+        if current_precip > 0.5:
             advice = "It is raining now. No irrigation needed."
             farmer_message = "🌧️ It is currently raining. No need to water your crops."
 
