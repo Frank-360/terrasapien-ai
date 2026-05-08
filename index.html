@@ -3,7 +3,7 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TerraSense</title>
+<title>TerraSapien</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 
@@ -338,7 +338,7 @@ button {
 
 <div class="container">
 
-<h2>🌱 TerraSense</h2>
+<h2>🌱 TerraSapien</h2>
 <h5>The intelligence layer for modern farming</h5>
 
 <div style="display:flex; gap:10px;">
@@ -459,7 +459,7 @@ function analyzeFarm(){
 
     document.getElementById("result").innerHTML = "⏳ Analyzing...";
 
-    fetch("https://terrasense-ai.onrender.com/analyze", {
+    fetch("https://terrasapien-ai.onrender.com/analyze", {
         method:"POST",
         headers:{ "Content-Type":"application/json" },
         body: JSON.stringify({
