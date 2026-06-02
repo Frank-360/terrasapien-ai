@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terrasapien Registration</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(
+        135deg,
+        #f4f8f2 0%,
+        #e8f5e9 100%
+    );
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+
+.registration-card{
+    width:100%;
+    max-width:550px;
+    background:#ffffff;
+    padding:40px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+h1{
+    text-align:center;
+    color:#2E7D32;
+    font-size:2rem;
+    margin-bottom:10px;
+}
+
+.subtitle{
+    text-align:center;
+    color:#666;
+    line-height:1.6;
+    margin-bottom:25px;
+}
+
+.benefits{
+    background:#f4f8f2;
+    border-left:4px solid #2E7D32;
+    padding:15px;
+    border-radius:10px;
+    margin-bottom:25px;
+}
+
+.benefits p{
+    margin-bottom:8px;
+    color:#2E7D32;
+    font-weight:500;
+}
+
+.benefits p:last-child{
+    margin-bottom:0;
+}
+
+input,
+select{
+    width:100%;
+    padding:14px;
+    border:1px solid #dcdcdc;
+    border-radius:10px;
+    margin-bottom:15px;
+    font-size:15px;
+    background:white;
+    transition:0.3s;
+}
+
+input:focus,
+select:focus{
+    outline:none;
+    border-color:#2E7D32;
+    box-shadow:0 0 0 3px rgba(46,125,50,0.15);
+}
+
+button{
+    width:100%;
+    padding:15px;
+    background:#2E7D32;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#256628;
+    transform:translateY(-2px);
+}
+
+button:disabled{
+    opacity:0.7;
+    cursor:not-allowed;
+    transform:none;
+}
+
+.footer-note{
+    text-align:center;
+    font-size:13px;
+    color:#777;
+    margin-top:20px;
+    line-height:1.5;
+}
+
+@media(max-width:600px){
+
+    .registration-card{
+        padding:25px;
+    }
+
+    h1{
+        font-size:1.7rem;
+    }
+
+}
+
+</style>
+
+</head>
+<body>
+
+<div class="registration-card">
+
+<h1>🌱 Terrasapien</h1>
+
+<p class="subtitle">
+The Intelligence Layer for Modern Farming
+</p>
+
+<div class="benefits">
+    <p>✓ AI Crop Recommendations</p>
+    <p>✓ Crop Disease Detection</p>
+    <p>✓ Weather Intelligence</p>
+    <p>✓ Smart Farm Advisory</p>
+</div>
+
+<form id="registerForm">
+
+<input
+type="text"
+id="full_name"
+placeholder="Full Name"
+required>
+
+<input
+type="text"
+id="phone"
+placeholder="Phone Number"
+required>
+
+<select id="state" required>
+<option value="">Select State</option>
+<option>Abia</option>
+<option>Adamawa</option>
+<option>Akwa Ibom</option>
+<option>Anambra</option>
+<option>Bauchi</option>
+<option>Bayelsa</option>
+<option>Benue</option>
+<option>Borno</option>
+<option>Cross River</option>
+<option>Delta</option>
+<option>Ebonyi</option>
+<option>Edo</option>
+<option>Ekiti</option>
+<option>Enugu</option>
+<option>FCT</option>
+<option>Gombe</option>
+<option>Imo</option>
+<option>Jigawa</option>
+<option>Kaduna</option>
+<option>Kano</option>
+<option>Katsina</option>
+<option>Kebbi</option>
+<option>Kogi</option>
+<option>Kwara</option>
+<option>Lagos</option>
+<option>Nasarawa</option>
+<option>Niger</option>
+<option>Ogun</option>
+<option>Ondo</option>
+<option>Osun</option>
+<option>Oyo</option>
+<option>Plateau</option>
+<option>Rivers</option>
+<option>Sokoto</option>
+<option>Taraba</option>
+<option>Yobe</option>
+<option>Zamfara</option>
+</select>
+
+<select id="crop" required>
+<option value="">Select Main Crop</option>
+<option>Maize</option>
+<option>Cassava</option>
+<option>Rice</option>
+<option>Yam</option>
+<option>Soybean</option>
+<option>Groundnut</option>
+<option>Vegetables</option>
+<option>Mixed Farming</option>
+<option>Other</option>
+</select>
+
+<select id="farm_size">
+<option value="">Select Farm Size</option>
+<option>Less than 1 hectare</option>
+<option>1 - 5 hectares</option>
+<option>5 - 20 hectares</option>
+<option>20+ hectares</option>
+</select>
+
+<button id="submitBtn" type="submit">
+Register & Continue
+</button>
+
+</form>
+
+<p class="footer-note">
+Your information helps Terrasapien provide better agricultural support and insights for farmers.
+</p>
+
+</div>
+
+<script>
+
+const terrasapienDB = window.supabase.createClient(
+    "https://hfqorouuaogjbzigvsvn.supabase.co",
+    "sb_publishable_RAooc99sn5oPdGfwGHe5Fw_BvnW57kz"
+);
+
+if(localStorage.getItem("terrasapien_user")){
+    window.location.href = "index.html";
+}
+
+document
+.getElementById("registerForm")
+.addEventListener("submit", async function(e){
+
+    e.preventDefault();
+
+    const submitBtn =
+      document.getElementById("submitBtn");
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Registering...";
+
+    const farmer = {
+
+        full_name:
+          document.getElementById("full_name").value,
+
+        phone_number:
+          document.getElementById("phone").value,
+
+        state:
+          document.getElementById("state").value,
+
+        crop:
+          document.getElementById("crop").value,
+
+        farm_size:
+          document.getElementById("farm_size").value
+
+    };
+
+    const { data, error } =
+    await terrasapienDB
+    .from("users")
+    .insert([farmer])
+    .select();
+
+    if(error){
+
+        console.error(error);
+
+        alert(
+          "Registration failed: " +
+          error.message
+        );
+
+        submitBtn.disabled = false;
+        submitBtn.textContent =
+          "Register & Continue";
+
+        return;
+    }
+
+    localStorage.setItem(
+      "terrasapien_user",
+      JSON.stringify(data[0])
+    );
+
+    alert("Registration Successful!");
+
+    window.location.href =
+      "index.html";
+
+});
+
+</script>
+
+</body>
+</html>
